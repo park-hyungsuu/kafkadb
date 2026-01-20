@@ -1,0 +1,13 @@
+CREATE TABLE `user` (
+	`user_id` VARCHAR(50) NOT NULL COMMENT '사용자 ID' COLLATE 'utf8mb4_general_ci',
+	`user_passwd` VARCHAR(20) NOT NULL COMMENT '사용자 암호' COLLATE 'utf8mb4_general_ci',
+	`user_auth` VARCHAR(10) NOT NULL COMMENT '사용자 권한' COLLATE 'utf8mb4_general_ci',
+	`user_name` VARCHAR(20) NOT NULL COMMENT '사용자 이름' COLLATE 'utf8mb4_general_ci',
+	`reg_date` DATETIME NULL DEFAULT current_timestamp() COMMENT '등록일',
+	`upd_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP() COMMENT '수정일',
+	PRIMARY KEY (`user_id`) USING BTREE
+)
+COMMENT='사용자 테이블'
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB
+;

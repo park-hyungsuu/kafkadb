@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="User">
+
+
+	<select id="selectUser" parameterType="userReqVo"
+		resultType="hashMap">
+		SELECT
+		user_id as "userId"
+		, user_passwd as "userPasswd"
+		, user_auth as "userAuth"
+		, user_name as "userName"
+		, reg_date as "regDate"
+		FROM
+		user
+		WHERE
+		user_Id=#{userId}
+	</select>
+
+	<select id="selectUserAndPass" parameterType="jwtTokenReqVo"
+		resultType="hashMap">
+		SELECT
+		user_id as "userId"
+		, user_passwd as "userPasswd"
+		, user_auth as "userAuth"
+		, user_name as "userName"
+		, reg_date as "regDate"
+		FROM
+		user
+		WHERE
+		user_Id=#{userId}
+		AND user_passwd=#{userPasswd}
+	</select>
+
+
+	<insert id="insertUser" parameterType="userReqVo">
+		INSERT INTO
+		user
+		( user_id
+		, user_passwd
+		, user_auth
+		, user_name
+
+		)
+		VALUES (
+		#{userId}
+		, #{userPasswd}
+		, #{userAuth}
+		, #{userName}
+		)
+
+	</insert>
+
+
+
+	<update id="updateUser" parameterType="userReqVo">
+		UPDATE user
+		SET user_passwd = #{userPasswd}
+		, user_auth = #{userAuth}
+		, user_name = #{userName}
+		WHERE user_id = #{userId}
+
+	</update>
+	<delete id="deleteUser" parameterType="hashMap">
+		DELETE
+		FROM
+		user
+		WHERE
+		user_Id=#{userId}
+	</delete>
+	
+	
+	  <select id="selectUserPage" parameterType="hashmap" resultType="hashmap">
+ 		SELECT
+		user_id as "userId"
+		, user_passwd as "userPasswd"
+		, user_auth as "userAuth"
+		, user_name as "userName"
+		, reg_date as "regDate"
+		FROM
+		user
+		
+              order by reg_date desc  
+            <if test="startData != null and pageSize != null">
+                LIMIT #{startData} , #{pageSize}
+            </if>
+    </select>
+</mapper>

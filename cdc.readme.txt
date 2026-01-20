@@ -1,0 +1,272 @@
+
+https://codewagon.tistory.com/m/8
+
+https://debezium.io/releases/
+
+{
+  "name": "source-test-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+    "tasks.max": "1",
+    "database.hostname": "192.168.0.216",
+    "database.port": "3306",
+    "database.user": "wiezon",
+    "database.password": "wiezon1!",
+    "database.server.id": "184054",
+    "database.server.name": "2023112825",
+    "database.allowPublicKeyRetrieval": "true",
+    "database.include.list": "sourcedb",
+    "database.history.kafka.bootstrap.servers": "192.168.0.102:9092",
+    "database.history.kafka.topic": "2023112825.sourcedb",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "true",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "true",
+    "transforms": "unwrap,addTopicPrefix",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.delete.handling.mode": "rewrite",
+    //"transforms.unwrap.add.fields": "op,table,source.ts_ms:event_timestamp,source.db:db,source.pos:pos,version",
+    "transforms.addTopicPrefix.type":"org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.addTopicPrefix.regex":"(.*)",
+    "transforms.addTopicPrefix.replacement":"$1",
+    "include.schema.changes":"false",
+    "transforms.unwrap.drop.tombstones": "false",
+     "delete.handling​.mode": "none",
+    "include.before":"true"
+
+  }
+}
+Connector.class : MySQL용 Debezium 커넥터를 구현하는 Java 클래스입니다.
+tasks.max : 이 커넥터에 대해 생성되어야 하는 최대 작업 수입니다.
+Database.hostname : MySQL 데이터베이스 서버의 호스트 이름 또는 IP 주소입니다.
+Database.port : MySQL 데이터베이스 서버가 수신 대기 중인 포트 번호입니다.
+Database.user : MySQL 데이터베이스 서버에 연결할 때 사용할 사용자 이름입니다.
+Database.password : MySQL 데이터베이스 서버에 연결할 때 사용할 비밀번호입니다.
+Database.server.id : MySQL 서버의 고유 식별자입니다. Kafka 클러스터 내에서 고유한지 확인하세요.
+Database.connectionTimeZone : MySQL 데이터베이스 서버의 시간대입니다.
+Database.server.name : Kafka Connect 클러스터 내 MySQL 데이터베이스 서버의 고유 식별자입니다.
+Database.allowPublicKeyRetrieval : SSL 핸드셰이크 중에 공개 키 검색을 허용할지 여부입니다.
+topic.prefix : 변경 사항이 기록될 Kafka 주제의 접두사입니다.
+key.converter : Kafka Connect 키를 변환하는 데 사용할 변환기입니다.
+key.converter.schemas.enable : 직렬화된 키 내에 스키마를 포함할지 여부입니다.
+value.converter : Kafka Connect 값을 변환하는 데 사용할 변환기입니다.
+value.converter.schemas.enable : 직렬화된 값 내에 스키마를 포함할지 여부입니다.
+transforms : 레코드에 적용할 변환의 쉼표로 구분된 목록입니다.
+transforms.unwrap.type : Debezium 레코드를 풀기 위한 변환입니다.
+transforms.unwrap.delete.handling.mode : DELETE 이벤트를 처리하는 방법입니다.
+transforms.addTopicPrefix.type : 주제 이름에 접두사를 추가하는 변환입니다.
+transforms.addTopicPrefix.regex : 주제 이름과 일치하는 정규식입니다.
+transforms.addTopicPrefix.replacement : 일치하는 정규식에 대한 대체 문자열입니다.
+include.schema.changes : 변경 이벤트에 스키마 변경 사항을 포함할지 여부입니다.
+transforms.unwrap.drop.tombstones : 삭제 표시 이벤트를 삭제해야 하는지 여부입니다.
+delete.handling.mode : DELETE 이벤트를 처리하는 방법입니다.
+include.before : 레코드의 "이전" 이미지를 포함할지 여부입니다.
+Schema.history.internal.kafka.topic : 커넥터가 자체 메타데이터를 저장할 Kafka 주제의 이름입니다.
+Schema.history.internal.kafka.bootstrap.servers : 내부 Kafka 주제에 대한 부트스트랩 서버입니다.
+Database.whitelist : 포함할 데이터베이스를 지정하는 정규식입니다. 이 패턴과 일치하는 데이터베이스의 이벤트만 캡처됩니다.
+slave
+
+{
+    "name": "sink-test-connector",
+    "config": {
+        "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+        "tasks.max": "1",
+        "connection.url": "jdbc:mysql://192.168.0.216:3306/targetDB",
+        "connection.user": "wiezon",
+        "connection.password": "wiezon1!",
+        "auto.create": "false",
+        "auto.evolve": "false",
+        "delete.enabled": "false",
+        "insert.mode": "upsert",
+        "pk.fields": "identification_id",
+        "pk.mode": "record_key",
+        "table.name.format": "employee",
+        "tombstones.on.delete": "true",
+        "topics.regex": "2023112825.sourcedb.(.*)",
+        "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "key.converter.schemas.enable": "true",
+        "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "value.converter.schemas.enable": "true",
+        "fields.whitelist": "identification_id,identification_pw,name,department"
+        // "transforms": "unwrap, route, TimestampConverter",
+        // "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+        // "transforms.unwrap.drop.tombstones": "true",
+        // "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+        // "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
+        // "transforms.route.replacement": "$3",
+        // "transforms.TimestampConverter.type": "org.apache.kafka.connect.transforms.TimestampConverter$Value",
+        // "transforms.TimestampConverter.format": "yyyy-MM-dd HH:mm:ss",
+        // "transforms.TimestampConverter.target.type": "Timestamp",
+        // "transforms.TimestampConverter.field": "update_date",
+        // "transforms.unwrap.add.fields": "identification_id,identification_pw,name,department"
+    }
+
+}
+name : Kafka Connect 싱크 커넥터의 이름입니다.
+Connector.class : JDBC 싱크 커넥터를 구현하는 Java 클래스입니다.
+tasks.max : 이 커넥터에 대해 생성되어야 하는 최대 작업 수입니다.
+Connection.url : 대상 데이터베이스에 대한 JDBC 연결 URL입니다.
+Connection.user : 대상 데이터베이스에 연결하기 위한 사용자 이름입니다.
+Connection.password : 대상 데이터베이스에 연결하기 위한 비밀번호입니다.
+auto.create : 테이블이 존재하지 않는 경우 대상 데이터베이스에 테이블을 자동으로 생성할지 여부입니다.
+auto.evolve : 대상 데이터베이스의 테이블 스키마를 자동으로 발전시킬지 여부입니다.
+delete.enabled : 대상 데이터베이스의 레코드 삭제를 활성화할지 여부입니다.
+insert.mode : 대상 데이터베이스에 삽입하기 위한 모드입니다(예: "upsert").
+pk.mode : 기본 키 모드는 이 경우 기본 키가 Kafka 레코드 키에서 파생되었음을 나타내는 "record_key"로 설정됩니다.
+table.name.format : 대상 테이블 이름의 형식입니다.
+topic.regex : 레코드를 사용해야 하는 Kafka 주제를 일치시키기 위한 정규식입니다.
+key.converter : Kafka Connect 키를 변환하는 데 사용할 변환기입니다.
+key.converter.schemas.enable : 직렬화된 키 내에 스키마를 포함할지 여부입니다.
+value.converter : Kafka Connect 값을 변환하는 데 사용할 변환기입니다.
+value.converter.schemas.enable : 직렬화된 값 내에 스키마를 포함할지 여부입니다.
+
+{
+"name": "source-test-connector",
+"config": {
+"connector.class": "io.debezium.connector.mysql.MySqlConnector",
+"tasks.max": "1",
+"database.hostname": "mysql",
+"database.port": "3306",
+"database.user": "mysqluser",
+"database.password": "mysqlpw",
+"database.server.id": "184054",
+"database.server.name": "dbserver1",
+"database.allowPublicKeyRetrieval": "true",
+"database.include.list": "testdb",
+"database.history.kafka.bootstrap.servers": "kafka:9092",
+"database.history.kafka.topic": "dbhistory.testdb",
+"key.converter": "org.apache.kafka.connect.json.JsonConverter",
+"key.converter.schemas.enable": "true",
+"value.converter": "org.apache.kafka.connect.json.JsonConverter",
+"value.converter.schemas.enable": "true",
+"transforms": "unwrap,addTopicPrefix",
+"transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+"transforms.unwrap.drop.tombstones": "false",
+"transforms.unwrap.delete.handling.mode":"rewrite" ,
+"transforms.addTopicPrefix.type":"org.apache.kafka.connect.transforms.RegexRouter",
+"transforms.addTopicPrefix.regex":"(.*)",
+"transforms.addTopicPrefix.replacement":"$1"
+}
+}
+
+
+
+
+
+{
+"name": "sink-test-connector",
+"config": {
+"connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+"tasks.max": "1",
+"connection.url": "jdbc:mysql://mysql-sink:3306/sinkdb?user=mysqluser&password=mysqlpw",
+"auto.create": "false",
+"auto.evolve": "true",
+"delete.enabled": "true",
+"insert.mode": "upsert",
+"pk.mode": "record_key",
+"table.name.format":"${topic}",
+"tombstones.on.delete": "true",
+"connection.user": "mysqluser",
+"connection.password": "mysqlpw",
+"topics.regex": "dbserver1.testdb.(.*)",
+"key.converter": "org.apache.kafka.connect.json.JsonConverter",
+"key.converter.schemas.enable": "true",
+"value.converter": "org.apache.kafka.connect.json.JsonConverter",
+"value.converter.schemas.enable": "true",
+"transforms": "unwrap, route, TimestampConverter",
+"transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+"transforms.unwrap.drop.tombstones": "false",
+"transforms.unwrap.delete.handling.mode":"rewrite" ,
+"transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+"transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
+"transforms.route.replacement": "$3",
+"transforms.TimestampConverter.type": "org.apache.kafka.connect.transforms.TimestampConverter$Value",
+"transforms.TimestampConverter.format": "yyyy-MM-dd HH:mm:ss",
+"transforms.TimestampConverter.target.type": "Timestamp",
+"transforms.TimestampConverter.field": "update_date"
+}
+}
+
+
+5.1. MySQL 바이너리 로그(binlog) 활성화 및 설정
+Debezium MySQL Connector는 MySQL의 바이너리 로그를 읽어 변경 사항을 감지하므로, MySQL 서버에서 binlog가 활성화되어 있어야 한다.  
+
+ 
+my.cnf (또는 custom.cnf) 설정: Docker Compose에서 마운트한 MySQL 설정 파일에 다음 내용을 추가하거나 수정한다.
+[mysqld]
+# General Binlog settings
+server-id         = 1 # 클러스터 내에서 고유한 ID여야 함 [6]
+log_bin           = /var/lib/mysql/mysql-bin # 또는 mysql-bin (기본값) [6, 13]
+binlog_format     = ROW # Debezium은 ROW 포맷 필요 [6]
+binlog_row_image  = FULL # 변경 전후 모든 컬럼 로깅 [6]
+
+# GTID (Global Transaction Identifiers) 활성화 (권장)
+gtid_mode                 = ON
+enforce_gtid_consistency  = ON
+
+# Binlog 보관 기간 (선택 사항, 운영 환경에 맞게 조절)
+expire_logs_days          = 7 # [6]
+
+# Debezium 권장 추가 설정 (MySQL 버전에 따라 확인 필요)
+binlog_row_value_options  = PARTIAL_JSON # MySQL 8.0.3 이상에서 JSON partial update 로깅 시 필요할 수 있음
+server-id: MySQL 클러스터 내의 각 서버 및 복제 클라이언트(Debezium 커넥터 포함)에서 고유해야 한다.
+log_bin: 바이너리 로그 파일의 기본 이름 및 경로를 지정한다.
+binlog_format=ROW: Debezium은 행 기반(row-based) 로깅 형식을 요구한다. 
+binlog_row_image=FULL: 변경된 행의 모든 컬럼 값을 로깅하여 Debezium이 변경 전후 데이터를 모두 캡처할 수 있도록 한다. 
+expire_logs_days: 바이너리 로그 보관 기간을 설정하여 디스크 공간을 관리한다. 너무 짧으면 Debezium이 초기 스냅샷 후 따라잡지 못할 수 있다.  
+Debezium용 MySQL 사용자 생성 및 권한 부여: Debezium 커넥터가 MySQL에 접속하여 binlog를 읽고 필요한 정보를 조회할 수 있도록 전용 사용자를 생성하고 적절한 권한을 부여해야 한다.  
+
+CREATE USER 'debezium_user'@'%' IDENTIFIED BY 'debezium_password';
+GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'debezium_user'@'%';
+FLUSH PRIVILEGES;
+최소 권한 원칙에 따라 실제 운영 환경에서는 더 세분화된 권한 설정이 필요할 수 있다.
+
+MySQL 서버 재시작 후 binlog 설정이 적용되었는지 확인한다.
+
+
+
+
+// register-mysql-connector.json
+{
+  "name": "mysql-inventory-connector", // 커넥터의 고유한 이름
+  "config": {
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector", // MySQL 커넥터 클래스 [14]
+    "tasks.max": "1", // MySQL 커넥터는 항상 단일 태스크 사용 [14]
+
+    "database.hostname": "mysql", // Docker Compose 서비스 이름 또는 IP
+    "database.port": "3306",
+    "database.user": "debezium_user", // 위에서 생성한 MySQL 사용자
+    "database.password": "debezium_password",
+    "database.server.id": "101010", // MySQL 클러스터 내 다른 server-id 및 다른 커넥터의 database.server.id와 중복되지 않는 고유한 ID [6, 14]
+    "database.server.name": "dbserver1", // Kafka 토픽 이름의 접두사로 사용될 논리적 서버 이름 [6, 14, 15] (topic.prefix와 유사)
+                                        // Kafka 토픽명: <database.server.name>.<database_name>.<table_name>
+
+    "database.include.list": "inventorydb", // 캡처할 데이터베이스 목록 (쉼표로 구분) [6, 15, 16]
+    "table.include.list": "inventorydb.products, inventorydb.customers", // 캡처할 테이블 목록 (데이터베이스명.테이블명 형식, 쉼표로 구분) [6, 15, 16]
+    // "table.exclude.list": "inventorydb.internal_logs", // 제외할 테이블 목록 (선택 사항)
+
+    "database.history.kafka.bootstrap.servers": "kafka:9092", // 스키마 변경 이력 저장용 Kafka 클러스터 주소 [14]
+    "database.history.kafka.topic": "schemahistory.inventory", // 스키마 변경 이력 저장용 Kafka 토픽 이름 (고유해야 함) [14]
+    // "schema.history.internal.store.only.captured.tables.ddl": "true", // (권장) include.list에 명시된 테이블의 DDL만 히스토리 토픽에 저장 [14]
+
+    // 초기 스냅샷 설정
+    "snapshot.mode": "initial", // 커넥터 첫 실행 시 스냅샷 수행 [3, 17] (옵션: when_needed, never, schema_only 등)
+    // "snapshot.locking.mode": "minimal", // 스냅샷 중 락 최소화 (MySQL에서는 기본적으로 테이블 락 사용, RDS 등에서는 다를 수 있음) [14]
+
+    // 데이터 변환 및 형식 (JSON 사용 예시)
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "false", // 메시지 키에 스키마 정보 포함 여부
+    "value.converter.schemas.enable": "true", // 메시지 값에 스키마 정보 포함 여부 (Elasticsearch Sink에서 스키마 추론 시 유용)
+                                            // Spring Boot 컨슈머에서 직접 파싱 시 false로 하고 ObjectMapper 사용 가능
+
+    // Debezium 이벤트에서 불필요한 필드 제거 또는 구조 변경을 위한 SMT (Single Message Transform) 설정 (선택 사항)
+    // 예: ExtractNewRecordState SMT를 사용하여 'after' 필드만 추출하고, Debezium 메타데이터 필드 제거
+    "transforms": "unwrap",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.fields": "op,source,ts_ms,transaction", // 제거할 필드
+    "transforms.unwrap.add.fields": "op,table,db", // 헤더에서 값으로 추가할 필드 (prefix는 transforms.unwrap.add.headers)
+    "transforms.unwrap.add.headers": "op,source.table,source.db", // 헤더의 값을 필드로 추가 (예시, 실제 필드명 확인 필요)
+    "transforms.unwrap.delete.handling.mode": "none" // 삭제 이벤트 처리 방식 (none, drop, rewrite)
+  }
+}
