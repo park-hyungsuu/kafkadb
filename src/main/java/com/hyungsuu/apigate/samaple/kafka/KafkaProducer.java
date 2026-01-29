@@ -27,7 +27,7 @@ public class KafkaProducer {
     }
 
 
-    List<Field> fields = Arrays.asList(
+    List<Field> insertFields = Arrays.asList(
     		new Field("string", false, "user_id"),
             new Field("string", false, "user_passwd"),
             new Field("string", false, "user_auth"),
@@ -38,14 +38,29 @@ public class KafkaProducer {
     );
 
     
-  
-    private Schema schema = Schema.builder()
+    List<Field> updateFields = Arrays.asList(
+    		new Field("string", false, "user_id"),
+            new Field("string", false, "user_passwd"),
+            new Field("string", false, "user_auth"),
+            new Field("string", false, "user_name"),
+  //          new Field("int64", false,"org.apache.kafka.connect.data.Timestamp", 1, "reg_date")   데아타를 Timestamp 로 보낼때
+ //           new Field("string", true, "reg_date"),
+            new Field("string", false, "upd_date") //  데이타를 LocalDateTime.now().toString()
+    );
+    
+    private Schema insertSchema = Schema.builder()
             .type("struct")
-            .fields(fields)
-            .optional(true)
+            .fields(insertFields)
+            .optional(false)
             .name("user")
             .build();
 
+    private Schema updateSchema = Schema.builder()
+            .type("struct")
+            .fields(updateFields)
+            .optional(false)
+            .name("user")
+            .build();
 
 
     public UserReqVo insert(String topic, UserReqVo userReqVo){
@@ -57,8 +72,9 @@ public class KafkaProducer {
                 .reg_date(LocalDateTime.now().toString())
                 .upd_date(LocalDateTime.now().toString())
                 .build();
+        		
 
-        KafkaUserReqVo kafkaUserReqVo = new KafkaUserReqVo(schema, payload);
+        KafkaUserReqVo kafkaUserReqVo = new KafkaUserReqVo(insertSchema, payload);
         log.info("user send data " + kafkaUserReqVo.toString());
         ObjectMapper mapper = new ObjectMapper();
         String jsonInString = "";
@@ -85,7 +101,7 @@ public class KafkaProducer {
                 .upd_date(LocalDateTime.now().toString())
                 .build();
 
-        KafkaUserUpdVo kafkaUserReqVo = new KafkaUserUpdVo(schema, payload);
+        KafkaUserUpdVo kafkaUserReqVo = new KafkaUserUpdVo(updateSchema, payload);
         log.info("user send data " + kafkaUserReqVo.toString());
         ObjectMapper mapper = new ObjectMapper();
         String jsonInString = "";

@@ -15,7 +15,6 @@ public class UserUpdPayloadVo implements Serializable {
 	private String user_passwd;
 	private String user_auth;
 	private String user_name;
-	private String reg_date;
 	private String upd_date;
 
 }

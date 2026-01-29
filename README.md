@@ -245,7 +245,6 @@ Sink Connector 등록
     "auto.evolve": "true",
 	"tasks.max":"1",
 	"behavior.on.null.values":"ignore",
-	"topics":"user",
 	"table.name.format":"user"
 	}
 }
